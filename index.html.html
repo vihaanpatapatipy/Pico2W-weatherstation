@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pico Temperature</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 40px; }
+    #temp { font-size: 64px; font-weight: bold; }
+    #time { color: #666; margin-bottom: 30px; }
+    table { margin: 0 auto; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 6px 16px; }
+  </style>
+</head>
+<body>
+  <h2>Pico 2 W Temperature</h2>
+  <div id="temp">--</div>
+  <div id="time">Loading...</div>
+  <table>
+    <thead><tr><th>Time</th><th>Temp (°C)</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <script>
+    const URL = "https://oqjmggwyllmindwkeqwl.supabase.co/rest/v1/readings?select=*&order=created_at.desc&limit=10";
+    const KEY = "sb_publishable_5IroNvmtn0IF5gVqf-B7JQ_gAwVlgE9";
+
+    async function load() {
+      try {
+        const res = await fetch(URL, { headers: { apikey: KEY } });
+        const data = await res.json();
+        if (!data.length) { document.getElementById("time").textContent = "No data yet"; return; }
+        document.getElementById("temp").textContent = data[0].temp + " °C";
+        document.getElementById("time").textContent =
+          "Last updated: " + new Date(data[0].created_at).toLocaleString();
+        document.getElementById("rows").innerHTML = data.map(r =>
+          "<tr><td>" + new Date(r.created_at).toLocaleString() + "</td><td>" + r.temp + "</td></tr>"
+        ).join("");
+      } catch (e) {
+        document.getElementById("time").textContent = "Error loading data";
+      }
+    }
+    load();
+    setInterval(load, 15000);
+  </script>
+</body>
+</html>
